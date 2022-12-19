@@ -13,14 +13,14 @@ class Test:
 
 def operate(worryLevel: int, instruction: str) -> int:
     instrSplit = instruction.split(' ')
-    retVal = worryLevel #Assume first is "old"
+    retVal = int(worryLevel) #Assume first is "old"
     for idx, instrItem in enumerate(instrSplit):
         if (instrItem == "old" or instrItem.isnumeric()):
             continue
         elif (instrItem in ['+', '-', '*', '/']):
             numToOperate = instrSplit[idx + 1]
             if numToOperate == "old":
-                numToOperate = worryLevel
+                numToOperate = int(worryLevel)
             else:
                 numToOperate = int(numToOperate)
             if (instrItem == '+'):
@@ -64,14 +64,19 @@ class Monkey:
         self.numInspected = 0
 
     def inspectItems(self, monkies: list):
+        global lcm
         for currItem in self.items:
             self.numInspected += 1
             currItem = operate(currItem, self.operation)
             #currItem = int(currItem / 3)
+            #currItem = (lcm % currItem) + lcm
+            currItem = (currItem % lcm)
             if currItem % self.test.divisibleNum == 0:
                 newIdx = self.test.ifTrue
             else:
                 newIdx = self.test.ifFalse
+            if currRoundNum == 8:
+                print('passed to %i' %(newIdx))
             monkies[newIdx].items.insert(len(monkies[newIdx].items), currItem)
         self.items = []
             
@@ -87,20 +92,26 @@ def simRound(monkies: list[Monkey]) -> None:
     for currMonkeyNum in range(0, len(monkies)):
         monkies[currMonkeyNum].inspectItems(monkies)
         
+def getDivisor(monkies: list[Monkey]) -> int:
+    divisors = []
+    for currMonkey in monkies: divisors.append(currMonkey.test.divisibleNum)
+    lcm = np.product(np.array(divisors))
+    return lcm
 
-
-fileH = open('test.txt','r')
+fileH = open('input.txt','r')
 fileText = fileH.read()
 monkies = processInput(fileText)
-
-#NUM_ROUNDS = 20
+lcm = int(getDivisor(monkies))
+#NUM_ROUNDS = 20    
 NUM_ROUNDS = 10000
 for currRoundNum in range(0, NUM_ROUNDS):
     simRound(monkies)
     print(currRoundNum)
+    #for monkey in monkies: print(monkey.numInspected)
+    #print()
 
 allNumInspected = []
 for idx, currMonkey in enumerate(monkies): allNumInspected.append(currMonkey.numInspected)
-allNumInspected = np.array(allNumInspected)
+allNumInspected = np.array(allNumInspected, dtype='uint64')
 allNumInspected.sort()
 print(allNumInspected[-1] * allNumInspected[-2])
