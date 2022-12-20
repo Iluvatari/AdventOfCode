@@ -64,26 +64,35 @@ def dropSand(caveArr: np.array, sandCoord:tuple[int,int], leftWall: int, rightWa
             currCoord[0] += 1
         else:
             sandCanMove = False
-    if not (currCoord[0] > leftWall and currCoord[0] < rightWall):
+    if currCoord[1] == np.shape(caveArr)[1] - 1:
         SAND_CAN_FALL = False
     caveArr[currCoord[0], currCoord[1]] = 2 #Sand at rest
-    printArray(caveArr, 494, 503)
+    printArray(caveArr, leftWall, rightWall)
         
 def printArray(caveArr, minBound, maxBound):
-    myList = caveArr.copy().tolist()
-    for currRowIdx in range(minBound, maxBound + 1):
-        for idx, currChar in enumerate(myList[currRowIdx]):
-            if currChar == 0:
-                newChar = '.'
-            elif currChar == 1:
-                newChar = '#'
-            elif currChar == 2:
-                newChar = 'o'
-            else:
-                assert(False)
-            myList[currRowIdx][idx] = newChar
-        print(myList[currRowIdx])
-    print('\n')
+    global FIRST
+    with open('image.txt', mode='w') as printFileH:
+        myList = caveArr.copy().transpose().tolist()
+        #if not FIRST:
+            #numToPrint = len(myList)
+            #for idx in range(numToPrint + 1):
+                #print('\033[F', end='', file=printFileH)
+        #else:
+        #    FIRST = False
+        for idxi, currRow in enumerate(myList):
+            for currRowIdx in range(minBound, maxBound):
+                currChar = currRow[currRowIdx]
+                if currChar == 0:
+                    newChar = '.'
+                elif currChar == 1:
+                    newChar = '#'
+                elif currChar == 2:
+                    newChar = 'o'
+                else:
+                    assert(False)
+                myList[idxi][currRowIdx] = newChar
+            print(''.join(myList[idxi][minBound:maxBound]), file=printFileH)
+        print('', file=printFileH)
     
 
 fileH = open('test.txt','r')
@@ -91,6 +100,9 @@ fileText = fileH.readlines()
 inputArr, minVert, maxVert = processInput(fileText)
 SAND_CAN_FALL = True
 COORD = (500,0)
+FIRST = True
+
 while SAND_CAN_FALL:
-    dropSand(inputArr, COORD, minVert, maxVert - 1)
+    dropSand(inputArr, COORD, minVert, maxVert)
+printArray(inputArr, minVert, maxVert)
 print(NUM_DROPPED - 1) #last one didn't make it
