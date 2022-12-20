@@ -38,8 +38,7 @@ def processInput(fileText: list[str]) -> tuple[np.array, int, int]:
             prevVert = currVert
             prevHorz = currHorz
             
-
-
+    inputArr = np.hstack([inputArr, np.zeros((inputArr.shape[0], 1))])
     return inputArr, minVert, maxVert #let's just say it moves rightward
 
 NUM_DROPPED = 0
@@ -51,9 +50,11 @@ def dropSand(caveArr: np.array, sandCoord:tuple[int,int], leftWall: int, rightWa
     sandCanMove = True
     currCoord = list(sandCoord)
     while sandCanMove:
-        if currCoord[1] == np.shape(caveArr)[1] - 1:#fell through
+        if currCoord[1] == caveArr.shape[1] - 1: #hit the bottom
             sandCanMove = False
             continue
+        if currCoord[0] + 1 == caveArr.shape[0]: #need to grow width
+            caveArr = np.vstack([caveArr, np.zeros((1, caveArr.shape[1]))])
         if caveArr[currCoord[0], currCoord[1] + 1] == 0: #"down"
             currCoord[1] += 1
         elif caveArr[currCoord[0] - 1, currCoord[1] + 1] == 0: #"downLeft":
@@ -64,21 +65,16 @@ def dropSand(caveArr: np.array, sandCoord:tuple[int,int], leftWall: int, rightWa
             currCoord[0] += 1
         else:
             sandCanMove = False
-    if currCoord[1] == np.shape(caveArr)[1] - 1:
+    if currCoord[0] == sandCoord[0] and currCoord[1] == sandCoord[1]:
         SAND_CAN_FALL = False
     caveArr[currCoord[0], currCoord[1]] = 2 #Sand at rest
-    printArray(caveArr, leftWall, rightWall)
+    #printArray(caveArr, leftWall - 10, caveArr.shape[0])
+    return caveArr
         
 def printArray(caveArr, minBound, maxBound):
     global FIRST
     with open('image.txt', mode='w') as printFileH:
         myList = caveArr.copy().transpose().tolist()
-        #if not FIRST:
-            #numToPrint = len(myList)
-            #for idx in range(numToPrint + 1):
-                #print('\033[F', end='', file=printFileH)
-        #else:
-        #    FIRST = False
         for idxi, currRow in enumerate(myList):
             for currRowIdx in range(minBound, maxBound):
                 currChar = currRow[currRowIdx]
@@ -95,7 +91,7 @@ def printArray(caveArr, minBound, maxBound):
         print('', file=printFileH)
     
 
-fileH = open('test.txt','r')
+fileH = open('input.txt','r')
 fileText = fileH.readlines()
 inputArr, minVert, maxVert = processInput(fileText)
 SAND_CAN_FALL = True
@@ -103,6 +99,6 @@ COORD = (500,0)
 FIRST = True
 
 while SAND_CAN_FALL:
-    dropSand(inputArr, COORD, minVert, maxVert)
-printArray(inputArr, minVert, maxVert)
-print(NUM_DROPPED - 1) #last one didn't make it
+    inputArr = dropSand(inputArr, COORD, minVert, maxVert)
+printArray(inputArr, minVert - 10, inputArr.shape[0])
+print(NUM_DROPPED) #last one didn't make it
