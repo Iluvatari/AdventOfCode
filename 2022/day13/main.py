@@ -79,10 +79,6 @@ def compareLists(list1: list, list2: list) -> bool:
                 isInOrder = False #1 is longer than 2
             else: #1 is int, 2 is list
                 isInOrder = compareLists([list1[idx]], list2[idx])
-                #if list2[idx][0] is None:
-                #    isInOrder = False
-                #else:
-                #    isInOrder = list1[idx] < list2[idx][0]
         elif list1[idx] is None:
             isInOrder = False
         else: #list1[idx] is list
@@ -90,7 +86,6 @@ def compareLists(list1: list, list2: list) -> bool:
                 if list1[idx][0] is None:
                     isInOrder = True
                 else:
-                    #isInOrder = list1[idx][0] <= list2[idx]
                     isInOrder = compareLists(list1[idx], [list2[idx]])
             else:
                 isInOrder = compareLists(list1[idx], list2[idx])
@@ -101,15 +96,41 @@ def compareLists(list1: list, list2: list) -> bool:
             isInOrder = True
     return isInOrder
 
+def joinPairs(pairList: tuple[list]) -> list:
+    pairsOut = []
+    for currPair in pairList:
+        pairsOut.append(currPair[0])
+        pairsOut.append(currPair[1])
+    return pairsOut
+
 fileH = open('input.txt','r')
 fileText = fileH.read()
 parsedList = processInput(fileText)
 isInOrder = []
 sum = 0
-for idx, currPair in enumerate(parsedList):
-    isInOrder.append(compareLists(currPair[0], currPair[1]))
-    print('%i %s: \n\t%s\n\t%s' %(idx, isInOrder[-1], currPair[0], currPair[1]))
-    if isInOrder[-1]:
-        #print(idx)
-        sum += 1 + idx
-print(sum)
+parsedList = joinPairs(parsedList)
+sortedList = []
+sortedList.append([[2]])
+idxOf2 = 0
+sortedList.append([[6]])
+idxOf6 = 1
+for idx, currElem in enumerate(parsedList):
+    idxFound = False
+    idxToTest = 0
+    while idxToTest < len(sortedList):
+        belongsHere = compareLists(parsedList[idx], sortedList[idxToTest])
+        if belongsHere:
+            break
+        idxToTest += 1
+    sortedList.insert(idxToTest, parsedList[idx])
+    if idxToTest <= idxOf2:
+        idxOf2 += 1
+    if idxToTest <= idxOf6:
+        idxOf6 += 1
+
+    #isInOrder.append(compareLists(currPair[0], currPair[1]))
+    #print('%i %s: \n\t%s\n\t%s' %(idx, isInOrder[-1], currPair[0], currPair[1]))
+    #if isInOrder[-1]:
+    #    sum += 1 + idx
+    
+print((idxOf2 + 1) * (idxOf6 + 1))
