@@ -21,6 +21,27 @@ class Sensor:
         pointsCovered = set(range(minBound, maxBound + 1))
         return pointsCovered
 
+    def getPerimeterPoints(self) -> set[tuple(int, int)]:
+        rowMin = self.coords[0] - self.distance
+        rowMax = self.coords[0] + self.distance
+        colMin = self.coords[1] - self.distance
+        colMax = self.coords[1] + self.distance
+        colRangeL = range(colMin, self.coords[1] + 1)
+        colRangeR = range(self.coords[1], colMax + 1)
+        rowRangeB = range(rowMin, self.coords[0] + 1)
+        rowRangeT = range(self.coords[0], rowMax + 1)
+        numPoints = colRangeL.__len__()
+        retSet = set()
+        for currIdx in numPoints:
+            retSet.update((colRangeL(currIdx),rowRangeT(currIdx)))
+        for currIdx in numPoints:
+            retSet.update((colRangeL(currIdx),rowRangeB(currIdx)))
+        for currIdx in numPoints:
+            retSet.update((colRangeR(currIdx),rowRangeT(currIdx)))
+        for currIdx in numPoints:
+            retSet.update((colRangeR(currIdx),rowRangeB(currIdx)))
+        return retSet
+
 def processInput(fileText: list[str]):
     sensors = []
     #beaconCoords = []
@@ -71,7 +92,7 @@ fileH = open('input.txt', 'r')
 fileText = fileH.readlines()
 sensors, colBounds, rowBounds = processInput(fileText)
 #ROW_NUM = 10
-ROW_NUM = 2000000
+#ROW_NUM = 2000000
 #numImpossible = 0
 #for currX in range(xBounds[0], xBounds[1] + 1):
 #    if isABeacon(sensors, (ROW_NUM, currX)):
@@ -81,17 +102,38 @@ ROW_NUM = 2000000
 #    isImpossible = checkIfImpossible(sensors, (ROW_NUM, currX))
 #    if isImpossible:
 #        numImpossible += 1
-columns = set()
-for sensor in sensors:
-    pointsCovered = sensor.pointsCoveredInRow(ROW_NUM)
-    columns.update(pointsCovered)
-toRemove = []
-for column in columns:
-    if isABeacon(sensors, (ROW_NUM, column)):
-        toRemove.append(column)
-    if isASensor(sensors, (ROW_NUM, column)):
-        toRemove.append(column)
-for column in toRemove:
-    columns.remove(column)
-numImpossible = columns.__len__()
-print(numImpossible)   
+
+#columns = set()
+#for sensor in sensors:
+#    pointsCovered = sensor.pointsCoveredInRow(ROW_NUM)
+#    columns.update(pointsCovered)
+#toRemove = []
+#for column in columns:
+#    if isABeacon(sensors, (ROW_NUM, column)):
+#        toRemove.append(column)
+#    if isASensor(sensors, (ROW_NUM, column)):
+#        toRemove.append(column)
+#for column in toRemove:
+#    columns.remove(column)
+#numImpossible = columns.__len__()
+
+def findFreePoint(sensors: list[Sensor]) -> tuple(int, int):
+    allPerimeterPoints = set()
+    currPoint = ()
+    for sensor in sensors:
+        perimeterPoints = sensor.getPerimeterPoints()
+        for currPoint in perimeterPoints:
+            pointFound = None
+            for sensorj in sensors:
+                if sensorj.isPointCovered():
+                    pointFound = False
+            if pointFound is not None: #found to be covered
+                break
+            pointFound = True
+        if pointFound is not None:
+            if pointFound:
+                break
+    return currPoint
+
+
+#print(numImpossible)   
